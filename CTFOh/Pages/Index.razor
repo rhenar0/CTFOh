@@ -1,17 +1,21 @@
 ﻿@page "/"
 @using CTFOh.SQLManagement.Data
 @using CTFOh.SQLManagement.Services
+@using CTFOh.Components
 
 @inject IListServices LISTservice
 @inject IChallsServices CHALLSservice
 @inject DialogService DialogService
+@inject DialogSideOpenNCTF DialogSideOpenNctf
 
 <PageTitle>CTFOh - Administration</PageTitle>
 
 <h1>Gestion des CTFs</h1>
 
+<h2>CTFs présent dans la DB</h2>
+
 <div style="display: flex; align-items: center; margin-bottom: 16px">
-    <RadzenButton Click="@ClearSelection" Text="Activer" ButtonStyle="ButtonStyle.Primary"/>
+    <RadzenButton Click=@(() => LoadCTF(selectedCTFs[0])) Text="Activer" ButtonStyle="ButtonStyle.Primary"/>
     <div style="margin-left: 10px">
         <RadzenButton Click="@ClearSelection" Text="Supprimer" ButtonStyle="ButtonStyle.Danger"/>
     </div>
@@ -22,26 +26,24 @@
     CTF Selectionné: @selectedCTFs[0].Name
 </div>
 }
-<div class="rz-p-12 rz-text-align-center">
-    <RadzenButton Text=@($"Order {orderID} details") ButtonStyle="ButtonStyle.Secondary" Click=@OpenOrder />
+    <div style="position: absolute; right: 33px">
+        <RadzenButton Click="@ShowInlineDialog" Text="Nouveau" ButtonStyle="ButtonStyle.Success"/>
+        </div> 
 </div>
 
 @code {
-    int orderID = 10248;
-
-    public async Task OpenOrder()
+    async Task ShowInlineDialog()
     {
-        await DialogService.OpenAsync<DialogCardPage>($"Order {orderID}",
-            new Dictionary<string, object>() { { "OrderID", orderID } },
-            new DialogOptions() { Width = "700px", Height = "512px", Resizable = true, Draggable = true });
+        var result = await DialogService.OpenSideAsync<DialogSideOpenNCTF>("Nouveau CTF", options: new SideDialogOptions
+            {
+                Position = DialogPosition.Right
+            });
     }
-
 }
-</div>
 
 <RadzenDataGrid AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="4"
-            AllowSorting="true" Data="@RCTFLists" TItem="CTFList" ColumnWidth="200px"
-            SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedCTFs>
+                AllowSorting="true" Data="@RCTFLists" TItem="CTFList" ColumnWidth="200px"
+                SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedCTFs>
     <Columns>
         <RadzenDataGridColumn TItem="CTFList" Property="Id" Title="Id" />
         <RadzenDataGridColumn TItem="CTFList" Property="Name" Title="Nom" />
@@ -51,28 +53,77 @@
     </Columns>
 </RadzenDataGrid>
 
+<h2>Challenges du CTF Actif</h2>
+
+<RadzenDataGrid AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="4"
+                AllowSorting="true" Data="@RCTFSelectedChalls" TItem="CTFListChalls" ColumnWidth="200px">
+    <Columns>
+        <RadzenDataGridColumn TItem="CTFListChalls" Property="Id" Title="Id" />
+        <RadzenDataGridColumn TItem="CTFListChalls" Property="Name" Title="Nom" />
+    </Columns>
+</RadzenDataGrid>
+
 @code {
     List<CTFList> RCTFLists;
     IList<CTFList> selectedCTFs;
+    List<CTFListChalls> RCTFChalls;
+    IList<CTFListChalls> RCTFSelectedChalls;
 
     void ClearSelection()
     {
         selectedCTFs = null;
     }
 
+    private async Task LoadCTF(CTFList ListCTF)
+    {
+        ListCTFs = await LISTservice.GetListAsync();
+        if (ListCTFs.Any())
+        {
+            foreach (var product in ListCTFs)
+            {
+                product.Select = 0;
+                await LISTservice.UpdateListAsync(product);
+            }
+        }
+        ListCTF.Select = 1;
+        await LISTservice.UpdateListAsync(ListCTF);
+        await RefreshSelectedCTF();
+    }
+    
+    private async Task RefreshSelectedCTF()
+    {
+        RCTFSelectedChalls = null;
+        foreach (var selectedChall in RCTFChalls)
+        {
+            if (selectedCTFs[0].Id == selectedChall.LinkedCTF)
+            {
+                RCTFSelectedChalls = RCTFChalls.Take(selectedChall.Id - 1).ToList();
+            }
+        }
+    }
+    
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         RCTFLists = await LISTservice.GetListAsync();
+        RCTFChalls = await CHALLSservice.GetListChallsAsync();
         foreach (var takeActif in RCTFLists)
         {
             if (takeActif.Select == 1)
             {
                 selectedCTFs = RCTFLists.Take(takeActif.Id - 1).ToList();
+                foreach (var selectedChall in RCTFChalls)
+                    {
+                        if (takeActif.Id == selectedChall.LinkedCTF)
+                        {
+                            RCTFSelectedChalls = RCTFChalls.Take(selectedChall.Id - 1).ToList();
+                        }
+                    }
             }
         }
     }
+
 }
 
 <div class="container">
@@ -196,21 +247,7 @@
         await RefreshCTF();
     } 
     
-    private async Task LoadCTF(CTFList ListCTF)
-    {
-        ListCTFs = await LISTservice.GetListAsync();
-        if (ListCTFs.Any())
-        {
-            foreach (var product in ListCTFs)
-            {
-                product.Select = 0;
-                await LISTservice.UpdateListAsync(product);
-            }
-        }
-        ListCTF.Select = 1;
-        await LISTservice.UpdateListAsync(ListCTF);
-        await RefreshCTF();
-    }
+    
 
     private async Task RefreshChalls()
     {

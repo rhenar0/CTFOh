@@ -1,0 +1,65 @@
+@if (nctf == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <RadzenTemplateForm Data="@nctf" Submit="@((NCTF args) => { Submit(args); })">
+    <RadzenRow Gap="1rem" Class="rz-p-0 rz-p-lg-4">
+        <RadzenColumn>
+            <RadzenStack>
+                <RadzenFieldset Text="Informations">
+                    <RadzenStack  Gap="1rem">
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <RadzenFormField Text="Nom du CTF" Style="width: 100%;">
+                                <RadzenTextBox @bind-Value="@nctf.TB_CTF_Name" Style="width: 100%;"/>
+                            </RadzenFormField>
+                        </RadzenRow>
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <RadzenFormField Text="Date de début" Style="width: 100%;">
+                                <RadzenDatePicker Style="width: 100%;" Name="DP_CTF_Dstart" @bind-Value="nctf.Dstart" ShowTime="true" DateFormat="dd/MM/yyyy HH:mm" />
+                            </RadzenFormField>
+                        </RadzenRow>
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <RadzenFormField Text="Date de fin" Style="width: 100%;">
+                                <RadzenDatePicker Style="width: 100%;" Name="DP_CTF_Dend" @bind-Value="nctf.Dend" ShowTime="true" DateFormat="dd/MM/yyyy HH:mm"/>
+                            </RadzenFormField>
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenFieldset>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="flight_takeoff" Text="Go !" />
+        <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Annuler" Click="@Cancel" />
+    </RadzenStack>
+    </RadzenTemplateForm>
+}
+
+@code {
+
+    public class NCTF
+    {
+        public string TB_CTF_Name { get; set; }
+        public DateTime Dstart { get; set; }
+        public DateTime Dend { get; set; }
+    }
+
+    NCTF nctf = new NCTF()
+    {
+        TB_CTF_Name = "CTF",
+        Dstart = DateTime.Now,
+        Dend = DateTime.Now
+    };
+
+    void Submit(NCTF arg)
+    {
+        
+    }
+
+    void Cancel()
+    {
+        //
+    }
+}

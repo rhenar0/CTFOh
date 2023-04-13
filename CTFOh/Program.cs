@@ -1,4 +1,5 @@
 using CTFOh;
+using CTFOh.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<TooltipService>();
 builder.Services.AddScoped<ContextMenuService>();
+builder.Services.AddScoped<DialogSideOpenNCTF>();
 
 builder.Services.AddDbContext<CTFDBContext>(optionsBuilder =>
 {
