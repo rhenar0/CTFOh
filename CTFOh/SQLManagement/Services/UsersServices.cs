@@ -4,8 +4,15 @@ namespace CTFOh.SQLManagement.Services;
 using Data;
 using DBContext;
 
+public interface IUsersServices
+{
+    Task<List<CTFUsers>> GetUsersAsync();
+    Task<CTFUsers> AddUsersAsync(CTFUsers users);
+    Task<CTFUsers> UpdateUsersAsync(CTFUsers users);
+    Task DeleteUsersAsync(CTFUsers users);
+}
 
-public class UsersServices
+public class UsersServices : IUsersServices
 {
     private CTFDBContext dbContext;
 

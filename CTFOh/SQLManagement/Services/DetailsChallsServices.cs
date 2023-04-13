@@ -4,11 +4,20 @@ namespace CTFOh.SQLManagement.Services;
 using Data;
 using DBContext;
 
+public interface IDetailsChallsServices
+{
+    Task<List<CTFDetailsChalls>> GetDetailsChallsAsync();
+    Task<CTFDetailsChalls> AddDetailsChallsAsync(CTFDetailsChalls DChalls);
+    Task<CTFDetailsChalls> UpdateDetailsChallsAsync(CTFDetailsChalls DChalls);
+    Task DeleteDetailsChallsAsync(CTFDetailsChalls DChalls);
+}
 
-public class DetailsChallsServices
+public class DetailsChallsServices : IDetailsChallsServices
 {
     private CTFDBContext dbContext;
 
+    
+    
     public DetailsChallsServices(CTFDBContext dbContext)
     {
         this.dbContext = dbContext;

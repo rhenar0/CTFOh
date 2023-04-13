@@ -1,8 +1,11 @@
+using CTFOh;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using CTFOh.Data;
 using CTFOh.SQLManagement.DBContext;
+using CTFOh.SQLManagement.Services;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddScoped<IChallsServices, ListChallsServices>();
+builder.Services.AddScoped<IListServices, ListServices>();
+
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<ContextMenuService>();
 
 builder.Services.AddDbContext<CTFDBContext>(optionsBuilder =>
 {

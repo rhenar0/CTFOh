@@ -2,8 +2,78 @@
 @using CTFOh.SQLManagement.Data
 @using CTFOh.SQLManagement.Services
 
-@inject ListServices LISTservice
-@inject ListChallsServices CHALLSservice
+@inject IListServices LISTservice
+@inject IChallsServices CHALLSservice
+@inject DialogService DialogService
+
+<PageTitle>CTFOh - Administration</PageTitle>
+
+<h1>Gestion des CTFs</h1>
+
+<div style="display: flex; align-items: center; margin-bottom: 16px">
+    <RadzenButton Click="@ClearSelection" Text="Activer" ButtonStyle="ButtonStyle.Primary"/>
+    <div style="margin-left: 10px">
+        <RadzenButton Click="@ClearSelection" Text="Supprimer" ButtonStyle="ButtonStyle.Danger"/>
+    </div>
+     
+@if (selectedCTFs?.Any() == true)
+{
+<div style="margin-left: 16px;">
+    CTF Selectionné: @selectedCTFs[0].Name
+</div>
+}
+<div class="rz-p-12 rz-text-align-center">
+    <RadzenButton Text=@($"Order {orderID} details") ButtonStyle="ButtonStyle.Secondary" Click=@OpenOrder />
+</div>
+
+@code {
+    int orderID = 10248;
+
+    public async Task OpenOrder()
+    {
+        await DialogService.OpenAsync<DialogCardPage>($"Order {orderID}",
+            new Dictionary<string, object>() { { "OrderID", orderID } },
+            new DialogOptions() { Width = "700px", Height = "512px", Resizable = true, Draggable = true });
+    }
+
+}
+</div>
+
+<RadzenDataGrid AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="4"
+            AllowSorting="true" Data="@RCTFLists" TItem="CTFList" ColumnWidth="200px"
+            SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedCTFs>
+    <Columns>
+        <RadzenDataGridColumn TItem="CTFList" Property="Id" Title="Id" />
+        <RadzenDataGridColumn TItem="CTFList" Property="Name" Title="Nom" />
+        <RadzenDataGridColumn TItem="CTFList" Property="Dstart" Title="Date de début" />
+        <RadzenDataGridColumn TItem="CTFList" Property="Dend" Title="Date de fin" />
+        <RadzenDataGridColumn TItem="CTFList" Property="Select" Title="Actif Actuellement" />
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    List<CTFList> RCTFLists;
+    IList<CTFList> selectedCTFs;
+
+    void ClearSelection()
+    {
+        selectedCTFs = null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        RCTFLists = await LISTservice.GetListAsync();
+        foreach (var takeActif in RCTFLists)
+        {
+            if (takeActif.Select == 1)
+            {
+                selectedCTFs = RCTFLists.Take(takeActif.Id - 1).ToList();
+            }
+        }
+    }
+}
 
 <div class="container">
 
@@ -31,8 +101,8 @@
                             <td>@product.Dstart</td>
                             <td>@product.Dend</td>
                             <td>@product.Select</td>
-                            <td><button class="btn btn-danger" @onclick="(() => DeleteCTF(product))">Delete</button></td>
-                            <td><button class="btn btn-check" @onclick="(() => LoadCTF(product))">Load</button></td>
+                            <td><RadzenButton @onclick="(() => DeleteCTF(product))">Delete</RadzenButton></td>
+                            <td><RadzenButton Click=@(() => LoadCTF(product))>Load</RadzenButton></td>
                         </tr>
                     }
                 }
@@ -94,12 +164,6 @@
     List<CTFList> ListCTFs = new List<CTFList>();
     List<CTFListChalls> Challs = new List<CTFListChalls>();
     int CTFSelect = 0;
-    
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshCTF();
-        await RefreshChalls();
-    }
 
     private async Task RefreshCTF()
     {

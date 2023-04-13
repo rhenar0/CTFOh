@@ -4,8 +4,15 @@ namespace CTFOh.SQLManagement.Services;
 using Data;
 using DBContext;
 
+public interface IListServices
+{
+    Task<List<CTFList>> GetListAsync();
+    Task<CTFList> AddListAsync(CTFList list);
+    Task<CTFList> UpdateListAsync(CTFList list);
+    Task DeleteListAsync(CTFList list);
+}
 
-public class ListServices
+public class ListServices : IListServices
 {
     private CTFDBContext dbContext;
 

@@ -4,11 +4,18 @@ namespace CTFOh.SQLManagement.Services;
 using Data;
 using DBContext;
 
+public interface ITeamsServices
+{
+    Task<List<CTFTeams>> GetTeamsAsync();
+    Task<CTFTeams> AddTeamsAsync(CTFTeams teams);
+    Task<CTFTeams> UpdateTeamsAsync(CTFTeams teams);
+    Task DeleteTeamsAsync(CTFTeams teams);
+}
 
-public class TeamsServices
+public class TeamsServices : ITeamsServices
 {
     private CTFDBContext dbContext;
-
+    
     public TeamsServices(CTFDBContext dbContext)
     {
         this.dbContext = dbContext;

@@ -4,8 +4,15 @@ namespace CTFOh.SQLManagement.Services;
 using Data;
 using DBContext;
 
+public interface IChallsServices
+{
+    Task<List<CTFListChalls>> GetListChallsAsync();
+    Task<CTFListChalls> AddListChallsAsync(CTFListChalls lchalls);
+    Task<CTFListChalls> UpdateListChallsAsync(CTFListChalls lchalls);
+    Task DeleteListChallsAsync(CTFListChalls lchalls);
+}
 
-public class ListChallsServices
+public class ListChallsServices : IChallsServices
 {
     private CTFDBContext dbContext;
 
