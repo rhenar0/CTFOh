@@ -1,0 +1,156 @@
+﻿@page "/"
+@using CTFOh.SQLManagement.Data
+@using CTFOh.SQLManagement.Services
+
+@inject ListServices LISTservice
+@inject ListChallsServices CHALLSservice
+
+<div class="container">
+
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>CTF Id</th>
+                    <th>Name</th>
+                    <th>DStart</th>
+                    <th>DEnd</th>
+                    <th>Select</th>
+                    <th>Delete CTF</th>
+                    <th>Load CTF</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ListCTFs.Any())
+                {
+                    @foreach (var product in ListCTFs)
+                    {
+                        <tr>
+                            <td>@product.Id</td>
+                            <td>@product.Name</td>
+                            <td>@product.Dstart</td>
+                            <td>@product.Dend</td>
+                            <td>@product.Select</td>
+                            <td><button class="btn btn-danger" @onclick="(() => DeleteCTF(product))">Delete</button></td>
+                            <td><button class="btn btn-check" @onclick="(() => LoadCTF(product))">Load</button></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No CTFs available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+<div class="container">
+
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Challs Id</th>
+                    <th>Name</th>
+                    <th>Actif</th>
+                    <th>Challs</th>
+                    <th>Order</th>
+                    <th>StrictOrder</th>
+                    <th>LinkedCTF</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Challs.Any())
+                {
+                    @foreach (var product in Challs)
+                    {
+                        @if (@product.LinkedCTF == CTFSelect) {
+                            <tr>
+                                <td>@product.Id</td>
+                                <td>@product.Name</td>
+                                <td>@product.Actif</td>
+                                <td>@product.Chall</td>
+                                <td>@product.Order</td>
+                                <td>@product.StrictOrder</td>
+                                <td>@product.LinkedCTF</td>
+                            </tr>
+                        }
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No Challs available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+@code {
+
+    List<CTFList> ListCTFs = new List<CTFList>();
+    List<CTFListChalls> Challs = new List<CTFListChalls>();
+    int CTFSelect = 0;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshCTF();
+        await RefreshChalls();
+    }
+
+    private async Task RefreshCTF()
+    {
+        ListCTFs = await LISTservice.GetListAsync();
+        if (ListCTFs.Any())
+        {
+            foreach (var product in ListCTFs)
+            {
+                if (product.Select == 1)
+                {
+                    CTFSelect = product.Id;
+                    await RefreshChalls();
+                }
+            }
+        }
+    }
+
+    public CTFList NewCTF { get; set; } = new CTFList();
+    private async Task AddNewCTF()
+    {
+        await LISTservice.AddListAsync(NewCTF);
+        NewCTF = new CTFList();
+        await RefreshCTF();
+    }
+    
+
+    private async Task DeleteCTF(CTFList ListCTF)
+    {
+        await LISTservice.DeleteListAsync(ListCTF);
+        await RefreshCTF();
+    } 
+    
+    private async Task LoadCTF(CTFList ListCTF)
+    {
+        ListCTFs = await LISTservice.GetListAsync();
+        if (ListCTFs.Any())
+        {
+            foreach (var product in ListCTFs)
+            {
+                product.Select = 0;
+                await LISTservice.UpdateListAsync(product);
+            }
+        }
+        ListCTF.Select = 1;
+        await LISTservice.UpdateListAsync(ListCTF);
+        await RefreshCTF();
+    }
+
+    private async Task RefreshChalls()
+    {
+        Challs = await CHALLSservice.GetListChallsAsync();
+    }
+
+}
